@@ -55,6 +55,18 @@ func NewClient(clientID, clientSecret string) *Client {
 	}
 }
 
+// NewClientWithURL creates a new DataCrunch client with a custom base URL
+func NewClientWithURL(clientID, clientSecret, baseURL string) *Client {
+	return &Client{
+		baseURL:      baseURL,
+		clientID:     clientID,
+		clientSecret: clientSecret,
+		httpClient: &http.Client{
+			Timeout: defaultTimeout,
+		},
+	}
+}
+
 // authenticate obtains an access token from DataCrunch
 func (c *Client) authenticate(ctx context.Context) error {
 	if c.token != "" && time.Now().Before(c.tokenExpiry) {

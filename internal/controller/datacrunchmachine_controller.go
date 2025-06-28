@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -381,10 +382,21 @@ func (r *DataCrunchMachineReconciler) getBootstrapData(ctx context.Context, mach
 }
 
 func (r *DataCrunchMachineReconciler) createDataCrunchClient(ctx context.Context, cluster *clusterv1.Cluster) (cloud.Client, error) {
-	// In a real implementation, you would get credentials from a secret
-	// For now, we'll use placeholder credentials
-	clientID := "your-datacrunch-client-id"
-	clientSecret := "your-datacrunch-client-secret"
+	// Get credentials from environment variables (for testing) or secrets (for production)
+	clientID := os.Getenv("DATACRUNCH_CLIENT_ID")
+	clientSecret := os.Getenv("DATACRUNCH_CLIENT_SECRET")
+	apiURL := os.Getenv("DATACRUNCH_API_URL")
+
+	if clientID == "" {
+		clientID = "your-datacrunch-client-id" // fallback for development
+	}
+	if clientSecret == "" {
+		clientSecret = "your-datacrunch-client-secret" // fallback for development
+	}
+
+	if apiURL != "" {
+		return datacrunch.NewClientWithURL(clientID, clientSecret, apiURL), nil
+	}
 
 	return datacrunch.NewClient(clientID, clientSecret), nil
 }

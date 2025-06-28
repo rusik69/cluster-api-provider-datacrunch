@@ -93,3 +93,4 @@ zz_generated.*.go
 # Local development
 local-*
 dev-* 
+doverage.html

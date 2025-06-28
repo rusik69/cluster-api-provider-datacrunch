@@ -54,6 +54,30 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
 
+.PHONY: test-unit
+test-unit: manifests generate fmt vet envtest ## Run unit tests only.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./api/... ./internal/... ./pkg/... ./version/... ./cmd/... -coverprofile cover.out
+
+.PHONY: test-e2e
+test-e2e: manifests generate fmt vet envtest ## Run end-to-end tests.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./test/e2e/... -ginkgo.v -ginkgo.progress
+
+.PHONY: test-e2e-verbose
+test-e2e-verbose: manifests generate fmt vet envtest ## Run end-to-end tests with verbose output.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./test/e2e/... -ginkgo.v -ginkgo.progress -ginkgo.show-node-events
+
+.PHONY: test-e2e-focus
+test-e2e-focus: manifests generate fmt vet envtest ## Run specific e2e tests (use FOCUS=pattern).
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./test/e2e/... -ginkgo.v -ginkgo.progress -ginkgo.focus="$(FOCUS)"
+
+.PHONY: test-all
+test-all: test-unit test-e2e ## Run all tests (unit + e2e).
+
+.PHONY: coverage
+coverage: test ## Generate test coverage report.
+	go tool cover -html=cover.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
 ##@ Build
 
 .PHONY: build
