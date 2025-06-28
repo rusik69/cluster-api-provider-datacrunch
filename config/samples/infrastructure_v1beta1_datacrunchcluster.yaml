@@ -1,0 +1,27 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DataCrunchCluster
+metadata:
+  labels:
+    app.kubernetes.io/name: datacrunchcluster
+    app.kubernetes.io/instance: datacrunchcluster-sample
+    app.kubernetes.io/part-of: cluster-api-provider-datacrunch
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: cluster-api-provider-datacrunch
+  name: datacrunchcluster-sample
+spec:
+  region: "FIN-01"
+  controlPlaneEndpoint:
+    host: "cluster-sample.datacrunch.local"
+    port: 6443
+  loadBalancer:
+    enabled: true
+  network:
+    vpc:
+      cidrBlock: "10.0.0.0/16"
+    subnets:
+      - name: "control-plane-subnet"
+        cidrBlock: "10.0.1.0/24"
+        isPublic: true
+      - name: "worker-subnet"
+        cidrBlock: "10.0.2.0/24"
+        isPublic: false 

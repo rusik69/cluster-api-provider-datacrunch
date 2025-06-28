@@ -1,0 +1,23 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DataCrunchMachine
+metadata:
+  labels:
+    app.kubernetes.io/name: datacrunchmachine
+    app.kubernetes.io/instance: datacrunchmachine-sample
+    app.kubernetes.io/part-of: cluster-api-provider-datacrunch
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: cluster-api-provider-datacrunch
+  name: datacrunchmachine-sample
+spec:
+  instanceType: "1xH100"
+  image: "ubuntu-22.04-cuda-12.1"
+  sshKeyName: "my-ssh-key"
+  publicIP: true
+  volumes:
+    - size: 100
+      type: "fast-ssd"
+  additionalTags:
+    environment: "dev"
+    project: "ml-training"
+  additionalMetadata:
+    gpu-workload: "training" 
