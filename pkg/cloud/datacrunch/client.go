@@ -95,7 +95,7 @@ func (c *Client) authenticate(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to authenticate: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("authentication failed with status: %d", resp.StatusCode)
@@ -156,7 +156,7 @@ func (c *Client) CreateInstance(ctx context.Context, spec *cloud.InstanceSpec) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to create instance: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("failed to create instance, status: %d", resp.StatusCode)
@@ -180,7 +180,7 @@ func (c *Client) GetInstance(ctx context.Context, instanceID string) (*cloud.Ins
 	if err != nil {
 		return nil, fmt.Errorf("failed to get instance: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("instance not found: %s", instanceID)
@@ -225,7 +225,7 @@ func (c *Client) DeleteInstance(ctx context.Context, instanceID string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete instance: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to delete instance, status: %d", resp.StatusCode)
@@ -240,7 +240,7 @@ func (c *Client) StartInstance(ctx context.Context, instanceID string) error {
 	if err != nil {
 		return fmt.Errorf("failed to start instance: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to start instance, status: %d", resp.StatusCode)
@@ -255,7 +255,7 @@ func (c *Client) StopInstance(ctx context.Context, instanceID string) error {
 	if err != nil {
 		return fmt.Errorf("failed to stop instance: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to stop instance, status: %d", resp.StatusCode)
@@ -270,7 +270,7 @@ func (c *Client) ListImages(ctx context.Context) ([]*cloud.Image, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list images: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to list images, status: %d", resp.StatusCode)
@@ -310,7 +310,7 @@ func (c *Client) GetImage(ctx context.Context, imageID string) (*cloud.Image, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to get image: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("image not found: %s", imageID)
@@ -347,7 +347,7 @@ func (c *Client) ListSSHKeys(ctx context.Context) ([]*cloud.SSHKey, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list SSH keys: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to list SSH keys, status: %d", resp.StatusCode)
@@ -390,7 +390,7 @@ func (c *Client) CreateSSHKey(ctx context.Context, name, publicKey string) (*clo
 	if err != nil {
 		return nil, fmt.Errorf("failed to create SSH key: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("failed to create SSH key, status: %d", resp.StatusCode)
@@ -421,7 +421,7 @@ func (c *Client) DeleteSSHKey(ctx context.Context, keyID string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete SSH key: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to delete SSH key, status: %d", resp.StatusCode)

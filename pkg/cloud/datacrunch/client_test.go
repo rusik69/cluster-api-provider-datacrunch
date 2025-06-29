@@ -244,7 +244,7 @@ func TestClient_RequestMethods(t *testing.T) {
 		t.Errorf("GET request failed: %v", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	respBody, _ := io.ReadAll(resp.Body)
 	if !strings.Contains(string(respBody), "GET") {
 		t.Error("Expected GET method in response")
@@ -260,7 +260,7 @@ func TestClient_RequestMethods(t *testing.T) {
 		t.Errorf("POST request failed: %v", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	respBody, _ = io.ReadAll(resp.Body)
 	if !strings.Contains(string(respBody), "POST") {
 		t.Error("Expected POST method in response")

@@ -141,7 +141,7 @@ func (m *MockDataCrunchAPI) handleAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 // Instance handlers
@@ -194,7 +194,7 @@ func (m *MockDataCrunchAPI) listInstances(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (m *MockDataCrunchAPI) createInstance(w http.ResponseWriter, r *http.Request) {
@@ -255,7 +255,7 @@ func (m *MockDataCrunchAPI) createInstance(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (m *MockDataCrunchAPI) getInstance(w http.ResponseWriter, r *http.Request, instanceID string) {
@@ -269,7 +269,7 @@ func (m *MockDataCrunchAPI) getInstance(w http.ResponseWriter, r *http.Request, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(instance)
+	_ = json.NewEncoder(w).Encode(instance)
 }
 
 func (m *MockDataCrunchAPI) deleteInstance(w http.ResponseWriter, r *http.Request, instanceID string) {
@@ -333,7 +333,7 @@ func (m *MockDataCrunchAPI) handleImages(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (m *MockDataCrunchAPI) handleImageByID(w http.ResponseWriter, r *http.Request, imageID string) {
@@ -352,7 +352,7 @@ func (m *MockDataCrunchAPI) handleImageByID(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(image)
+	_ = json.NewEncoder(w).Encode(image)
 }
 
 // SSH Key handlers
@@ -390,7 +390,7 @@ func (m *MockDataCrunchAPI) listSSHKeys(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (m *MockDataCrunchAPI) createSSHKey(w http.ResponseWriter, r *http.Request) {
@@ -415,7 +415,7 @@ func (m *MockDataCrunchAPI) createSSHKey(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(sshKey)
+	_ = json.NewEncoder(w).Encode(sshKey)
 }
 
 func (m *MockDataCrunchAPI) deleteSSHKey(w http.ResponseWriter, r *http.Request, keyID string) {
@@ -438,7 +438,7 @@ func (m *MockDataCrunchAPI) handleLoadBalancers(w http.ResponseWriter, r *http.R
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotImplemented)
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (m *MockDataCrunchAPI) handleLoadBalancerByID(w http.ResponseWriter, r *http.Request, lbID string) {
@@ -447,5 +447,5 @@ func (m *MockDataCrunchAPI) handleLoadBalancerByID(w http.ResponseWriter, r *htt
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotImplemented)
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }

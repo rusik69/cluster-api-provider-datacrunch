@@ -22,7 +22,7 @@ import (
 	"os"
 	"time"
 
-	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -152,43 +152,43 @@ func CreateSecret(name, namespace string, mockAPIURL string) *corev1.Secret {
 
 // WaitForClusterReady waits for a DataCrunchCluster to be in Ready state
 func WaitForClusterReady(ctx context.Context, client client.Client, clusterName, namespace string, timeout time.Duration) {
-	Eventually(func() bool {
+	gomega.Eventually(func() bool {
 		cluster := &infrastructurev1beta1.DataCrunchCluster{}
 		err := client.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: namespace}, cluster)
 		if err != nil {
 			return false
 		}
 		return cluster.Status.Ready
-	}, timeout, interval).Should(BeTrue())
+	}, timeout, interval).Should(gomega.BeTrue())
 }
 
 // WaitForMachineReady waits for a DataCrunchMachine to be in Ready state
 func WaitForMachineReady(ctx context.Context, client client.Client, machineName, namespace string, timeout time.Duration) {
-	Eventually(func() bool {
+	gomega.Eventually(func() bool {
 		machine := &infrastructurev1beta1.DataCrunchMachine{}
 		err := client.Get(ctx, types.NamespacedName{Name: machineName, Namespace: namespace}, machine)
 		if err != nil {
 			return false
 		}
 		return machine.Status.Ready
-	}, timeout, interval).Should(BeTrue())
+	}, timeout, interval).Should(gomega.BeTrue())
 }
 
 // WaitForMachineInstanceState waits for a DataCrunchMachine to reach a specific instance state
 func WaitForMachineInstanceState(ctx context.Context, client client.Client, machineName, namespace string, expectedState infrastructurev1beta1.InstanceState, timeout time.Duration) {
-	Eventually(func() bool {
+	gomega.Eventually(func() bool {
 		machine := &infrastructurev1beta1.DataCrunchMachine{}
 		err := client.Get(ctx, types.NamespacedName{Name: machineName, Namespace: namespace}, machine)
 		if err != nil {
 			return false
 		}
 		return machine.Status.InstanceState != nil && *machine.Status.InstanceState == expectedState
-	}, timeout, interval).Should(BeTrue())
+	}, timeout, interval).Should(gomega.BeTrue())
 }
 
 // WaitForClusterCondition waits for a specific condition on a DataCrunchCluster
 func WaitForClusterCondition(ctx context.Context, client client.Client, clusterName, namespace string, conditionType clusterv1.ConditionType, status corev1.ConditionStatus, timeout time.Duration) {
-	Eventually(func() bool {
+	gomega.Eventually(func() bool {
 		cluster := &infrastructurev1beta1.DataCrunchCluster{}
 		err := client.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: namespace}, cluster)
 		if err != nil {
@@ -201,12 +201,12 @@ func WaitForClusterCondition(ctx context.Context, client client.Client, clusterN
 			}
 		}
 		return false
-	}, timeout, interval).Should(BeTrue())
+	}, timeout, interval).Should(gomega.BeTrue())
 }
 
 // WaitForMachineCondition waits for a specific condition on a DataCrunchMachine
 func WaitForMachineCondition(ctx context.Context, client client.Client, machineName, namespace string, conditionType clusterv1.ConditionType, status corev1.ConditionStatus, timeout time.Duration) {
-	Eventually(func() bool {
+	gomega.Eventually(func() bool {
 		machine := &infrastructurev1beta1.DataCrunchMachine{}
 		err := client.Get(ctx, types.NamespacedName{Name: machineName, Namespace: namespace}, machine)
 		if err != nil {
@@ -219,44 +219,43 @@ func WaitForMachineCondition(ctx context.Context, client client.Client, machineN
 			}
 		}
 		return false
-	}, timeout, interval).Should(BeTrue())
+	}, timeout, interval).Should(gomega.BeTrue())
 }
 
 // WaitForResourceDeletion waits for a resource to be deleted
 func WaitForResourceDeletion(ctx context.Context, client client.Client, obj client.Object, timeout time.Duration) {
-	Eventually(func() bool {
-		err := client.Get(ctx, types.NamespacedName{
-			Name:      obj.GetName(),
-			Namespace: obj.GetNamespace(),
-		}, obj)
-		return err != nil
-	}, timeout, interval).Should(BeTrue())
+	gomega.Eventually(func() bool {
+		err := client.Get(ctx, types.NamespacedName{Name: obj.GetName(), Namespace: obj.GetNamespace()}, obj)
+		return err != nil // Resource should not be found (deleted)
+	}, timeout, interval).Should(gomega.BeTrue())
 }
 
-// GetClusterFromMachine retrieves the DataCrunchCluster associated with a machine
+// GetClusterFromMachine gets the cluster associated with a machine
 func GetClusterFromMachine(ctx context.Context, client client.Client, machine *infrastructurev1beta1.DataCrunchMachine) (*infrastructurev1beta1.DataCrunchCluster, error) {
-	// In a real scenario, you'd get this from the Machine's owner references or labels
-	// For testing, we'll assume the cluster has the same name prefix
-	clusterName := machine.Name + "-cluster"
+	// Get the owner cluster name from the machine's labels/annotations
+	clusterName := machine.Labels[clusterv1.ClusterNameLabel]
+	if clusterName == "" {
+		return nil, fmt.Errorf("machine %s/%s does not have cluster label", machine.Namespace, machine.Name)
+	}
 
 	cluster := &infrastructurev1beta1.DataCrunchCluster{}
-	err := client.Get(ctx, types.NamespacedName{
-		Name:      clusterName,
-		Namespace: machine.Namespace,
-	}, cluster)
-
-	return cluster, err
-}
-
-// GetMachineProviderID extracts the provider ID from a machine's status
-func GetMachineProviderID(machine *infrastructurev1beta1.DataCrunchMachine) string {
-	if machine.Spec.ProviderID == nil {
-		return ""
+	err := client.Get(ctx, types.NamespacedName{Name: clusterName, Namespace: machine.Namespace}, cluster)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster %s/%s: %w", machine.Namespace, clusterName, err)
 	}
-	return *machine.Spec.ProviderID
+
+	return cluster, nil
 }
 
-// HasCondition checks if a resource has a specific condition
+// GetMachineProviderID returns the provider ID for a machine
+func GetMachineProviderID(machine *infrastructurev1beta1.DataCrunchMachine) string {
+	if machine.Spec.ProviderID != nil {
+		return *machine.Spec.ProviderID
+	}
+	return ""
+}
+
+// HasCondition checks if a condition type exists in a list of conditions
 func HasCondition(conditions clusterv1.Conditions, conditionType clusterv1.ConditionType) bool {
 	for _, condition := range conditions {
 		if condition.Type == conditionType {
@@ -266,7 +265,7 @@ func HasCondition(conditions clusterv1.Conditions, conditionType clusterv1.Condi
 	return false
 }
 
-// GetCondition retrieves a specific condition from a list
+// GetCondition returns a specific condition from a list of conditions
 func GetCondition(conditions clusterv1.Conditions, conditionType clusterv1.ConditionType) *clusterv1.Condition {
 	for _, condition := range conditions {
 		if condition.Type == conditionType {
@@ -278,52 +277,41 @@ func GetCondition(conditions clusterv1.Conditions, conditionType clusterv1.Condi
 
 // SetupDataCrunchCredentials sets up environment variables for DataCrunch API access
 func SetupDataCrunchCredentials(mockAPIURL string) {
-	os.Setenv("DATACRUNCH_CLIENT_ID", "test-client-id")
-	os.Setenv("DATACRUNCH_CLIENT_SECRET", "test-client-secret")
-	os.Setenv("DATACRUNCH_API_URL", mockAPIURL)
+	_ = os.Setenv("DATACRUNCH_CLIENT_ID", "test-client-id")
+	_ = os.Setenv("DATACRUNCH_CLIENT_SECRET", "test-client-secret")
+	_ = os.Setenv("DATACRUNCH_API_URL", mockAPIURL)
 }
 
 // CleanupDataCrunchCredentials removes DataCrunch environment variables
 func CleanupDataCrunchCredentials() {
-	os.Unsetenv("DATACRUNCH_CLIENT_ID")
-	os.Unsetenv("DATACRUNCH_CLIENT_SECRET")
-	os.Unsetenv("DATACRUNCH_API_URL")
+	_ = os.Unsetenv("DATACRUNCH_CLIENT_ID")
+	_ = os.Unsetenv("DATACRUNCH_CLIENT_SECRET")
+	_ = os.Unsetenv("DATACRUNCH_API_URL")
 }
 
-// CreateTestEnvironment creates a complete test environment with cluster and machine
+// CreateTestEnvironment creates a complete test environment with cluster, machine, and secret
 func CreateTestEnvironment(ctx context.Context, client client.Client, mockAPIURL string) (*infrastructurev1beta1.DataCrunchCluster, *infrastructurev1beta1.DataCrunchMachine, *corev1.Secret) {
-	// Create secret for credentials
-	secret := CreateSecret("datacrunch-credentials", TestNamespace, mockAPIURL)
-	Expect(client.Create(ctx, secret)).To(Succeed())
-
-	// Create cluster
 	cluster := CreateDataCrunchCluster(TestClusterName, TestNamespace)
-	Expect(client.Create(ctx, cluster)).To(Succeed())
-
-	// Create machine
 	machine := CreateDataCrunchMachine(TestMachineName, TestNamespace)
-	Expect(client.Create(ctx, machine)).To(Succeed())
+	secret := CreateSecret("datacrunch-credentials", TestNamespace, mockAPIURL)
+
+	// Create resources
+	gomega.Expect(client.Create(ctx, cluster)).To(gomega.Succeed())
+	gomega.Expect(client.Create(ctx, machine)).To(gomega.Succeed())
+	gomega.Expect(client.Create(ctx, secret)).To(gomega.Succeed())
 
 	return cluster, machine, secret
 }
 
-// CleanupTestEnvironment removes all test resources
+// CleanupTestEnvironment cleans up test resources
 func CleanupTestEnvironment(ctx context.Context, client client.Client, cluster *infrastructurev1beta1.DataCrunchCluster, machine *infrastructurev1beta1.DataCrunchMachine, secret *corev1.Secret) {
-	// Delete machine first
-	if machine != nil {
-		Expect(client.Delete(ctx, machine)).To(Succeed())
-		WaitForResourceDeletion(ctx, client, machine, timeout)
-	}
+	// Delete resources (ignore errors as they might already be deleted)
+	_ = client.Delete(ctx, machine)
+	_ = client.Delete(ctx, cluster)
+	_ = client.Delete(ctx, secret)
 
-	// Delete cluster
-	if cluster != nil {
-		Expect(client.Delete(ctx, cluster)).To(Succeed())
-		WaitForResourceDeletion(ctx, client, cluster, timeout)
-	}
-
-	// Delete secret
-	if secret != nil {
-		Expect(client.Delete(ctx, secret)).To(Succeed())
-		WaitForResourceDeletion(ctx, client, secret, timeout)
-	}
+	// Wait for deletion
+	WaitForResourceDeletion(ctx, client, machine, timeout)
+	WaitForResourceDeletion(ctx, client, cluster, timeout)
+	WaitForResourceDeletion(ctx, client, secret, timeout)
 }
