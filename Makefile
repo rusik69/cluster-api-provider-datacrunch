@@ -84,6 +84,15 @@ coverage: test ## Generate test coverage report.
 build: manifests generate fmt vet ## Build manager binary.
 	go build -o bin/manager cmd/main.go
 
+.PHONY: build-release
+build-release: manifests generate ## Build release binaries for multiple platforms.
+	@mkdir -p bin
+	GOOS=linux GOARCH=amd64 go build -o bin/manager-linux-amd64 cmd/main.go
+	GOOS=linux GOARCH=arm64 go build -o bin/manager-linux-arm64 cmd/main.go
+	GOOS=darwin GOARCH=amd64 go build -o bin/manager-darwin-amd64 cmd/main.go
+	GOOS=darwin GOARCH=arm64 go build -o bin/manager-darwin-arm64 cmd/main.go
+	GOOS=windows GOARCH=amd64 go build -o bin/manager-windows-amd64.exe cmd/main.go
+
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./cmd/main.go
@@ -92,7 +101,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 # (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/dev-best-practices/
 .PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
+docker-build: test-unit ## Build docker image with the manager.
 	docker build -t ${IMG} .
 
 .PHONY: docker-push
