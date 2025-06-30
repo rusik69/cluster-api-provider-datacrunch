@@ -41,26 +41,7 @@ This directory contains the GitHub Actions workflows for the DataCrunch Cluster 
 - GitHub Container Registry integration
 - Semantic versioning support
 
-### 3. Nightly Tests (`nightly.yml`)
 
-**Triggers:** Daily at 2 AM UTC, Manual dispatch
-**Purpose:** Comprehensive testing across multiple environments
-
-**Jobs:**
-- **test-matrix**: Tests across multiple Go versions and OS platforms
-- **stress-tests**: Runs tests multiple times to catch flaky tests
-- **performance-benchmarks**: Performance regression testing
-- **security-deep-scan**: Deep security analysis
-- **dependency-updates**: Tracks outdated dependencies
-- **notify-failure**: Creates GitHub issues on failures
-
-**Features:**
-- Cross-platform testing (Linux, macOS, Windows)
-- Multi-version Go testing (1.20, 1.21, 1.22)
-- Race condition detection
-- Memory leak analysis
-- Vulnerability scanning
-- Automated issue creation on failures
 
 ## Setup Requirements
 
@@ -128,8 +109,8 @@ make docker-build
 Some workflows support manual triggering:
 
 ```bash
-# Trigger nightly tests manually
-gh workflow run nightly.yml
+# Trigger workflows manually
+gh workflow run test.yml
 
 # Check workflow status
 gh workflow list
@@ -165,7 +146,7 @@ Monitor workflow status through:
 1. **Test Failures**: Check the test artifacts uploaded on failure
 2. **Build Failures**: Verify Go version compatibility
 3. **Container Build Issues**: Check Docker configuration and base image availability
-4. **Dependency Issues**: Review Dependabot PRs and nightly dependency reports
+4. **Dependency Issues**: Review Dependabot PRs for dependency updates
 
 ### Debugging
 
@@ -186,7 +167,7 @@ Monitor workflow status through:
 
 1. **Caching**: All workflows use Go module caching
 2. **Parallel Execution**: Jobs run in parallel where possible
-3. **Matrix Strategy**: Nightly tests use matrix builds for efficiency
+3. **Matrix Strategy**: Workflows use parallel execution for efficiency
 4. **Container Layers**: Dockerfile is optimized for layer caching
 
 ## Security Considerations
